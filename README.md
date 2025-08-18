@@ -1,7 +1,5 @@
 Meal Mate is a full-stack meal planning and recipe management tool. It lets you save recipes, organize them into folders, generate smart meal plans, and automatically build consolidated grocery lists. Recipes can be extracted from the web, entered manually, or generated via AI.
 
-Access the Prototype here: Meal-Mate.replit.app
-
 Features
 * Recipe Management
     * Save recipes from URLs or enter manually.
@@ -65,3 +63,8 @@ Future Enhancements
 * Nutrition info & calorie tracking.
 * Export grocery lists to Instacart / Amazon Fresh.
 * More robust unit conversions for ingredients.
+
+You can access the prototype here: Meal-Mate.replit.app
+
+## 👨‍💻 Author
+Built by Mira Kapoor Wadehra (https://github.com/mirakw).
