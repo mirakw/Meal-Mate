@@ -1,0 +1,26 @@
+{
+    "uncategorized": {
+        "id": "uncategorized",
+        "name": "Uncategorized",
+        "created_at": "2025-06-10T17:46:26.456739",
+        "recipe_count": 0
+    },
+    "pastas": {
+        "id": "pastas",
+        "name": "pastas",
+        "created_at": "2025-06-10T19:05:24.640472",
+        "recipe_count": 1
+    },
+    "brekkie": {
+        "id": "brekkie",
+        "name": "brekkie",
+        "created_at": "2025-06-10T19:06:05.603462",
+        "recipe_count": 1
+    },
+    "dessert": {
+        "id": "dessert",
+        "name": "dessert",
+        "created_at": "2025-06-10T19:06:53.718956",
+        "recipe_count": 1
+    }
+}

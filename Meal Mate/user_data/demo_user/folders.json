@@ -1,0 +1,56 @@
+{
+    "uncategorized": {
+        "id": "uncategorized",
+        "name": "Uncategorized",
+        "created_at": "2025-06-29T16:46:09.101928",
+        "recipe_count": 2
+    },
+    "brekkie": {
+        "id": "brekkie",
+        "name": "Breakfast",
+        "created_at": "2025-06-10T20:38:00.000000",
+        "recipe_count": 2
+    },
+    "cookies": {
+        "id": "cookies",
+        "name": "Cookies",
+        "created_at": "2025-06-22T21:26:00.000000",
+        "recipe_count": 2
+    },
+    "indian___chicken": {
+        "id": "indian___chicken",
+        "name": "Indian - Chicken",
+        "created_at": "2025-06-22T23:22:00.000000",
+        "recipe_count": 2
+    },
+    "indian___veg": {
+        "id": "indian___veg",
+        "name": "Indian - Veg",
+        "created_at": "2025-06-26T00:52:00.000000",
+        "recipe_count": 3
+    },
+    "pastas": {
+        "id": "pastas",
+        "name": "Pastas",
+        "created_at": "2025-06-29T03:21:00.000000",
+        "recipe_count": 2
+    },
+    "pizzaaaa": {
+        "id": "pizzaaaa",
+        "name": "Pizza",
+        "created_at": "2025-06-22T23:24:00.000000",
+        "recipe_count": 1
+    },
+    "salads": {
+        "id": "salads",
+        "name": "Salads",
+        "created_at": "2025-06-26T00:50:00.000000",
+        "recipe_count": 5
+    },
+    "thai": {
+        "id": "thai",
+        "name": "Thai",
+        "created_at": "2025-06-29T16:32:00.000000",
+        "recipe_count": 6
+    }
+}

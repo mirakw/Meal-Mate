@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MealMate - Your AI Kitchen Companion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body class="fade-in">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="fas fa-chef-hat me-2"></i>MealMate</a>
+            
+            {% if user %}
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="rounded-circle bg-white bg-opacity-20 p-2 me-2">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <span>{{ user.first_name or 'User' }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                        <li><h6 class="dropdown-header">{{ user.email }}</h6></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('auth_logout') }}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    {% if user %}
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            
+            <!-- Welcome Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-0 bg-transparent">
+                        <div class="card-body text-center py-5">
+                            <h1 class="text-gradient mb-3">Welcome to Your Kitchen Hub</h1>
+                            <p class="text-secondary fs-5">Organize recipes, plan meals, and generate grocery lists with AI assistance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Recipe Discovery Section -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-search fa-2x text-primary mb-3"></i>
+                                <h3 class="mb-2">What are you craving today?</h3>
+                                <p class="text-secondary">Choose how you want to search, then tell me what you're looking for</p>
+                            </div>
+                            <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                    <!-- Search Type Selection -->
+                                    <div class="btn-group w-100 mb-3" role="group" aria-label="Search type">
+                                        <input type="radio" class="btn-check" name="searchType" id="searchSaved" value="saved" checked>
+                                        <label class="btn btn-outline-primary" for="searchSaved">
+                                            <i class="fas fa-folder me-1"></i>Search My Recipes
+                                        </label>
+                                        
+                                        <input type="radio" class="btn-check" name="searchType" id="searchWeb" value="web">
+                                        <label class="btn btn-outline-success" for="searchWeb">
+                                            <i class="fas fa-globe me-1"></i>Discover New Recipes
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Search Input -->
+                                    <div class="search-container position-relative">
+                                        <input type="text" id="cravingSearch" class="form-control form-control-lg" 
+                                               placeholder="I'm craving something creamy with pasta and mushrooms..." 
+                                               onkeypress="handleCravingSearch(event)">
+                                        <button class="btn btn-primary search-btn position-absolute" onclick="performCravingSearch()">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="text-center mt-2">
+                                        <small class="text-muted">Press Enter or click search to find recipes</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Results Section -->
+            <div class="row mb-5" id="searchResultsSection" style="display: none;">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-utensils me-2"></i>Recipe Suggestions
+                            </h5>
+                        </div>
+                        <div class="card-body" id="searchResults">
+                            <!-- Results will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row mb-5">
+                <div class="col-3 mb-3">
+                    <div class="card text-center hover-lift h-100">
+                        <div class="card-body d-flex flex-column">
+                            <i class="fas fa-link fa-2x text-primary mb-3"></i>
+                            <h5 class="card-title">Extract Recipe</h5>
+                            <p class="card-text text-secondary flex-grow-1">Import recipes from any cooking website</p>
+                            <button class="btn btn-pastel-teal mt-auto" onclick="showExtractModal()">
+                                <i class="fas fa-plus me-2"></i>Add from URL
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3 mb-3">
+                    <div class="card text-center hover-lift h-100">
+                        <div class="card-body d-flex flex-column">
+                            <i class="fas fa-pen-fancy fa-2x text-success mb-3"></i>
+                            <h5 class="card-title">Manual Recipe</h5>
+                            <p class="card-text text-secondary flex-grow-1">Create your own custom recipes</p>
+                            <button class="btn btn-pastel-green mt-auto" onclick="showManualModal()">
+                                <i class="fas fa-edit me-2"></i>Create Recipe
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3 mb-3">
+                    <div class="card text-center hover-lift h-100">
+                        <div class="card-body d-flex flex-column">
+                            <i class="fas fa-calendar-alt fa-2x text-warning mb-3"></i>
+                            <h5 class="card-title">Meal Planning</h5>
+                            <p class="card-text text-secondary flex-grow-1">Plan your meals for the week</p>
+                            <button class="btn btn-pastel-orange mt-auto" onclick="showMealPlanModal()">
+                                <i class="fas fa-calendar-plus me-2"></i>Plan Meals
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3 mb-3">
+                    <div class="card text-center hover-lift h-100">
+                        <div class="card-body d-flex flex-column">
+                            <i class="fas fa-shopping-cart fa-2x text-info mb-3"></i>
+                            <h5 class="card-title">Grocery Lists</h5>
+                            <p class="card-text text-secondary flex-grow-1">View and manage saved grocery lists</p>
+                            <button class="btn btn-pastel-blue mt-auto" onclick="showSavedGroceryListsModal()">
+                                <i class="fas fa-list me-2"></i>View Lists
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Meal Plan & Grocery List Section -->
+            <div class="row mb-5" id="currentPlanSection" style="display: none;">
+                <div class="col-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-calendar-alt me-2"></i>Current Meal Plan
+                            </h5>
+                        </div>
+                        <div class="card-body" id="currentMealPlan">
+                            <p class="text-muted">No meal plan created yet. Use the Meal Planning box above to create your first plan!</p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-outline-success btn-sm" onclick="showMealPlanModal()">
+                                <i class="fas fa-plus me-2"></i>Create New Plan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-shopping-cart me-2"></i>Current Grocery List
+                            </h5>
+                        </div>
+                        <div class="card-body" id="currentGroceryList">
+                            <p class="text-muted">No grocery list available. Create a meal plan to generate your grocery list!</p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-outline-info btn-sm" onclick="showSavedGroceryListsModal()">
+                                <i class="fas fa-list me-2"></i>View All Lists
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recipe Folders Section -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h3><i class="fas fa-folder-open me-2 text-primary"></i>Recipe Folders</h3>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-primary btn-sm" onclick="showCreateFolderModal()">
+                                    <i class="fas fa-plus me-1"></i>New Folder
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="showRenameFolderModal()">
+                                    <i class="fas fa-edit me-1"></i>Rename
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteFolderConfirm()">
+                                    <i class="fas fa-trash me-1"></i>Delete
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="folderContainer">
+                                <div class="folder-grid" id="folderGrid">
+                                    <!-- Folders will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Recipes Section -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-utensils me-2 text-primary"></i>My Recipes</h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="recipeContainer">
+                                <div class="recipe-grid" id="recipeGrid">
+                                    <!-- Recipes will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Extract Recipe Modal -->
+    <div class="modal fade" id="extractModal" tabindex="-1" aria-labelledby="extractModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="extractModalLabel">
+                        <i class="fas fa-link me-2"></i>Extract Recipe from URL
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="extractForm">
+                        <div class="mb-3">
+                            <label for="recipeUrl" class="form-label">Recipe URL</label>
+                            <input type="url" class="form-control" id="recipeUrl" placeholder="https://example.com/recipe" required>
+                            <div class="form-text">Enter the URL of a recipe from any cooking website</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="extractFolder" class="form-label">Save to Folder</label>
+                            <select class="form-select" id="extractFolder" required>
+                                <option value="">Select a folder...</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="extractRecipe()">
+                        <i class="fas fa-download me-2"></i>Extract Recipe
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Recipe Modal -->
+    <div class="modal fade" id="manualModal" tabindex="-1" aria-labelledby="manualModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="manualModalLabel">
+                        <i class="fas fa-pen-fancy me-2"></i>Create Manual Recipe
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="manualForm">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="manualName" class="form-label">Recipe Name</label>
+                                    <input type="text" class="form-control" id="manualName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="manualServing" class="form-label">Serving Size</label>
+                                    <input type="text" class="form-control" id="manualServing" placeholder="4 servings">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="manualIngredients" class="form-label">Ingredients</label>
+                            <textarea class="form-control" id="manualIngredients" rows="6" placeholder="Enter each ingredient on a new line..." required></textarea>
+                            <div class="form-text">Enter one ingredient per line</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="manualInstructions" class="form-label">Instructions</label>
+                            <textarea class="form-control" id="manualInstructions" rows="8" placeholder="Enter each instruction step on a new line..." required></textarea>
+                            <div class="form-text">Enter one instruction step per line</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="manualFolder" class="form-label">Save to Folder</label>
+                            <select class="form-select" id="manualFolder" required>
+                                <option value="">Select a folder...</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="saveManualRecipe()">
+                        <i class="fas fa-save me-2"></i>Save Recipe
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meal Plan Modal -->
+    <div class="modal fade" id="mealPlanModal" tabindex="-1" aria-labelledby="mealPlanModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="mealPlanModalLabel">
+                        <i class="fas fa-calendar-alt me-2"></i>Create Meal Plan
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="mealPlanForm">
+                        <div class="date-range-container">
+                            <div>
+                                <label for="startDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="startDate" required>
+                            </div>
+                            <div>
+                                <label for="endDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="endDate" required>
+                            </div>
+                        </div>
+                        <div id="dateRangeInfo" class="mt-2 text-muted">
+                            Select your meal prep dates
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Select Recipes</label>
+                            <div id="recipeSelection" class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                                <!-- Recipe checkboxes will be loaded here -->
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="generateMealPlan()">
+                        <i class="fas fa-magic me-2"></i>Generate Plan & Grocery List
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Folder Modal -->
+    <div class="modal fade" id="createFolderModal" tabindex="-1" aria-labelledby="createFolderModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createFolderModalLabel">
+                        <i class="fas fa-folder-plus me-2"></i>Create New Folder
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createFolderForm">
+                        <div class="mb-3">
+                            <label for="folderName" class="form-label">Folder Name</label>
+                            <input type="text" class="form-control" id="folderName" placeholder="e.g., Breakfast, Desserts, Quick Meals" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="createFolder()">
+                        <i class="fas fa-plus me-2"></i>Create Folder
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Folder Modal -->
+    <div class="modal fade" id="renameFolderModal" tabindex="-1" aria-labelledby="renameFolderModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="renameFolderModalLabel">
+                        <i class="fas fa-edit me-2"></i>Rename Folder
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="renameFolderForm">
+                        <div class="mb-3">
+                            <label for="selectRenameFolder" class="form-label">Select Folder</label>
+                            <select class="form-select" id="selectRenameFolder" required>
+                                <option value="">Choose folder to rename...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newFolderName" class="form-label">New Name</label>
+                            <input type="text" class="form-control" id="newFolderName" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="renameFolder()">
+                        <i class="fas fa-save me-2"></i>Rename Folder
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Folder Modal -->
+    <div class="modal fade" id="deleteFolderModal" tabindex="-1" aria-labelledby="deleteFolderModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteFolderModalLabel">
+                        <i class="fas fa-trash me-2"></i>Delete Folder
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="deleteFolderForm">
+                        <div class="mb-3">
+                            <label for="selectDeleteFolder" class="form-label">Select Folder to Delete</label>
+                            <select class="form-select" id="selectDeleteFolder" required>
+                                <option value="">Choose folder to delete...</option>
+                            </select>
+                        </div>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Warning:</strong> All recipes in this folder will be moved to "Uncategorized".
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteFolder()">
+                        <i class="fas fa-trash me-2"></i>Delete Folder
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Folder Recipes Modal -->
+    <div class="modal fade" id="folderModal" tabindex="-1" aria-labelledby="folderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="folderModalTitle">
+                        <i class="fas fa-folder-open me-2"></i>Folder Recipes
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="folderModalBody">
+                    <!-- Folder recipes will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipe Details Modal -->
+    <div class="modal fade" id="recipeModal" tabindex="-1" aria-labelledby="recipeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="recipeModalTitle">
+                        <i class="fas fa-utensils me-2"></i>Recipe Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="recipeModalBody">
+                    <!-- Recipe details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary" id="moveRecipeBtn">
+                        <i class="fas fa-folder me-2"></i>Move Recipe
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" id="deleteRecipeBtn">
+                        <i class="fas fa-trash me-2"></i>Delete Recipe
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Move Recipe Modal -->
+    <div class="modal fade" id="moveRecipeModal" tabindex="-1" aria-labelledby="moveRecipeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="moveRecipeModalLabel">
+                        <i class="fas fa-folder me-2"></i>Move Recipe
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Move "<strong id="moveRecipeName"></strong>" to a different folder:</p>
+                    <form id="moveRecipeForm">
+                        <div class="mb-3">
+                            <label for="moveTargetFolder" class="form-label">Select Target Folder</label>
+                            <select class="form-select" id="moveTargetFolder" required>
+                                <option value="">Choose folder...</option>
+                            </select>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            The recipe will be moved from its current folder to the selected folder.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmMoveRecipe()">
+                        <i class="fas fa-folder me-2"></i>Move Recipe
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grocery List Modal -->
+    <div class="modal fade" id="groceryListModal" tabindex="-1" aria-labelledby="groceryListModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="groceryListModalLabel">
+                        <i class="fas fa-shopping-cart me-2"></i>Meal Plan & Grocery List
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="groceryList">
+                    <!-- Grocery list will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onclick="saveCurrentGroceryList()">
+                        <i class="fas fa-save me-2"></i>Save List
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" onclick="copyGroceryList()">
+                        <i class="fas fa-copy me-2"></i>Copy List
+                    </button>
+                    <button type="button" class="btn btn-outline-success" onclick="printGroceryList()">
+                        <i class="fas fa-print me-2"></i>Print List
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Saved Grocery Lists Modal -->
+    <div class="modal fade" id="savedGroceryListsModal" tabindex="-1" aria-labelledby="savedGroceryListsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="savedGroceryListsModalLabel">
+                        <i class="fas fa-list me-2"></i>Saved Grocery Lists
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="savedGroceryListsBody">
+                    <!-- Saved grocery lists will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-5">
+                    <div class="loading-spinner mb-3" style="width: 3rem; height: 3rem; border-width: 4px;"></div>
+                    <h5 id="loadingTitle">Processing...</h5>
+                    <p id="loadingSubtitle" class="text-secondary">Please wait while we work on your request</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Login Required -->
+    <div class="login-container">
+        <div class="login-card">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-chef-hat fa-4x text-primary mb-3"></i>
+                        <h1 class="login-title">Welcome to Meal Planner</h1>
+                        <p class="login-subtitle">Your intelligent kitchen companion for recipe management, meal planning, and grocery list generation.</p>
+                    </div>
+                    <div class="d-grid">
+                        <a href="{{ url_for('auth_login') }}" class="btn btn-primary btn-lg">
+                            <i class="fab fa-google me-2"></i>
+                            Sign in with Google
+                        </a>
+                    </div>
+                    <div class="text-center mt-4">
+                        <small class="text-secondary">
+                            Organize recipes • Plan meals • Generate grocery lists
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

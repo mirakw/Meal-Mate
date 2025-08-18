@@ -1,0 +1,24 @@
+{
+  "name": "Simple Mixed Vegetable Stir Fry",
+  "ingredients": [
+    "2 tbsp vegetable oil",
+    "1 onion, sliced",
+    "2 cloves garlic, minced",
+    "1 bell pepper, sliced",
+    "1 cup broccoli florets",
+    "1 carrot, julienned",
+    "2 tbsp soy sauce",
+    "1 tsp sesame oil",
+    "Salt and pepper to taste"
+  ],
+  "instructions": [
+    "Heat oil in large pan or wok over high heat",
+    "Add onion and garlic, stir fry 2 minutes",
+    "Add bell pepper, broccoli, and carrot",
+    "Stir fry vegetables 3-4 minutes until crisp-tender",
+    "Add soy sauce and sesame oil",
+    "Season with salt and pepper, serve immediately"
+  ],
+  "serving_size": "4 servings",
+  "url": "https://example.com/vegetable-stir-fry"
+}
